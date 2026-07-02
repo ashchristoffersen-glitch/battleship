@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Battleship</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <header class="header">
+    <h1 class="header__title">Battleship</h1>
+    <div id="message" class="message"></div>
+  </header>
+
+  <main class="game">
+    <section class="game__panel game__panel--human">
+      <h2 class="panel-title">Your Fleet</h2>
+      <div id="human-board"></div>
+    </section>
+
+    <aside id="dock" class="dock"></aside>
+
+    <section class="game__panel game__panel--ai">
+      <h2 class="panel-title">Enemy Waters</h2>
+      <div id="ai-board"></div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <button id="new-game-btn" class="btn btn--primary" hidden>New Game</button>
+    <div id="scoreboard" class="scoreboard">
+      <span>Wins: <strong id="wins">0</strong></span>
+      <span>Losses: <strong id="losses">0</strong></span>
+    </div>
+  </footer>
+
+  <div id="overlay" class="overlay" hidden>
+    <div class="overlay__content">
+      <h2 id="overlay-title"></h2>
+      <p id="overlay-text"></p>
+      <button id="overlay-btn" class="btn btn--primary">Play Again</button>
+    </div>
+  </div>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
