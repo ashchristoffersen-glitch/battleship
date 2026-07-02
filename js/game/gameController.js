@@ -1,0 +1,103 @@
+import Board from './Board.js';
+import Player from './Player.js';
+import AiPlayer from './AiPlayer.js';
+
+export const FLEET = [
+  { name: 'Carrier', length: 5 },
+  { name: 'Battleship', length: 4 },
+  { name: 'Cruiser', length: 3 },
+  { name: 'Submarine', length: 3 },
+  { name: 'Destroyer', length: 2 },
+];
+
+/**
+ * Game phases:
+ *   'placement' – human is placing ships
+ *   'player-turn' – human fires at AI board
+ *   'ai-turn' – AI fires at human board
+ *   'game-over'
+ */
+
+export default class GameController {
+  constructor() {
+    this.humanBoard = new Board();
+    this.aiBoard = new Board();
+    this.human = new Player('You', this.humanBoard);
+    this.ai = new AiPlayer(this.aiBoard, this.humanBoard);
+    this.phase = 'placement';
+    this.winner = null;
+
+    /** @type {((event: object) => void)|null} */
+    this.onUpdate = null;
+  }
+
+  /**
+   * Place the AI's fleet and transition out of placement phase.
+   */
+  startGame() {
+    this.aiBoard.placeFleetRandomly(FLEET);
+    this.phase = 'player-turn';
+    this._emit({ type: 'phase-change', phase: this.phase });
+  }
+
+  /**
+   * Human fires at (row, col) on the AI board.
+   * @returns {object|null} attack outcome, or null if invalid.
+   */
+  humanAttack(row, col) {
+    if (this.phase !== 'player-turn') return null;
+    if (this.aiBoard.attacks[row][col] !== null) return null;
+
+    const outcome = this.aiBoard.receiveAttack(row, col);
+    this._emit({ type: 'human-attack', row, col, ...outcome });
+
+    if (this.aiBoard.allSunk()) {
+      this.phase = 'game-over';
+      this.winner = 'human';
+      this._emit({ type: 'game-over', winner: 'human' });
+      return outcome;
+    }
+
+    this.phase = 'ai-turn';
+    this._emit({ type: 'phase-change', phase: this.phase });
+    return outcome;
+  }
+
+  /**
+   * Execute the AI's turn. Returns the outcome.
+   */
+  aiAttack() {
+    if (this.phase !== 'ai-turn') return null;
+
+    const outcome = this.ai.takeTurn();
+    this._emit({ type: 'ai-attack', ...outcome });
+
+    if (this.humanBoard.allSunk()) {
+      this.phase = 'game-over';
+      this.winner = 'ai';
+      this._emit({ type: 'game-over', winner: 'ai' });
+      return outcome;
+    }
+
+    this.phase = 'player-turn';
+    this._emit({ type: 'phase-change', phase: this.phase });
+    return outcome;
+  }
+
+  /**
+   * Reset to a fresh game state.
+   */
+  reset() {
+    this.humanBoard = new Board();
+    this.aiBoard = new Board();
+    this.human = new Player('You', this.humanBoard);
+    this.ai = new AiPlayer(this.aiBoard, this.humanBoard);
+    this.phase = 'placement';
+    this.winner = null;
+    this._emit({ type: 'reset' });
+  }
+
+  _emit(event) {
+    if (this.onUpdate) this.onUpdate(event);
+  }
+}
