@@ -126,6 +126,20 @@ There is also a "New Game" button in the footer (visible after game-over) for th
 10. **ARIA labels**: inspect aria-label attributes during gameplay
 11. **New Game from overlay**: click "New Game" in the game-over overlay → difficulty screen appears, boards hidden
 12. **Boards hidden on difficulty screen**: after clicking "New Game", verify `<main class="game">` has `hidden` attribute and is not visible
+13. **How-to-play instructions**: on the difficulty screen, verify the `.difficulty-screen__howto` paragraph sits between the "Choose Difficulty" heading and the difficulty buttons (reading order: heading → how to play → buttons). It reads as body copy (not fine print) with a constrained max-width so lines don't stretch across a desktop. On a narrow phone viewport (≤480px), the third sentence (`.difficulty-screen__howto-extra` — "Hits are red, misses are grey.") is hidden, and the heading, instructions, and both buttons all fit on one screen without scrolling.
+
+## Repeat-Fire Feedback (issue #5)
+
+Clicking an enemy cell that was already fired at (hit or miss) shows the message "You already fired at that square." — the cell state is unchanged and no AI turn is triggered. To test: fire at a cell, wait for the AI response, then click the SAME cell again and verify the message.
+
+## Scoreboard Persistence (issue #6)
+
+The footer scoreboard (`Wins`/`Losses`) is persisted to `localStorage` (key `battleship-scoreboard` via `js/game/Scoreboard.js`):
+- **Refresh** the page → scoreboard is preserved (NOT reset to 0-0).
+- **Play Again** (overlay or after game-over) → scoreboard keeps its running count.
+- **New Game** (overlay/footer button → difficulty screen) → scoreboard resets to 0-0.
+
+To test cleanly, reach game-over so the score is non-zero, then exercise refresh / Play Again / New Game and check the footer count each time. `localStorage` persists between reloads, so clear it (or click New Game) between unrelated test runs to start from 0-0.
 
 ## Repeat-Fire Feedback (issue #5)
 
