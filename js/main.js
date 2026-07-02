@@ -5,7 +5,7 @@ import { initPlacement } from './ui/dragAndDrop.js';
 
 const AI_TURN_DELAY_MS = 600;
 
-const game = new GameController();
+let game = null;
 let humanBoardEl;
 let aiBoardEl;
 let wins = 0;
@@ -21,6 +21,8 @@ function init() {
   const overlayTitle = document.getElementById('overlay-title');
   const overlayText = document.getElementById('overlay-text');
   const overlayBtn = document.getElementById('overlay-btn');
+  const diffScreen = document.getElementById('difficulty-screen');
+  const gameMain = document.querySelector('.game');
 
   initMessage(messageEl);
 
@@ -34,6 +36,24 @@ function init() {
     humanContainer.appendChild(humanBoardEl);
     aiContainer.appendChild(aiBoardEl);
   }
+
+  function showDifficultyScreen() {
+    diffScreen.hidden = false;
+    gameMain.hidden = true;
+    overlay.hidden = true;
+    newGameBtn.hidden = true;
+    showMessage('', 'info');
+  }
+
+  function onDifficultyChosen(difficulty) {
+    game = new GameController(difficulty);
+    diffScreen.hidden = true;
+    gameMain.hidden = false;
+    startPlacement();
+  }
+
+  document.getElementById('diff-easy').addEventListener('click', () => onDifficultyChosen('easy'));
+  document.getElementById('diff-normal').addEventListener('click', () => onDifficultyChosen('normal'));
 
   function startPlacement() {
     setupBoards();
@@ -120,10 +140,14 @@ function init() {
     startPlacement();
   }
 
-  overlayBtn.addEventListener('click', resetGame);
-  newGameBtn.addEventListener('click', resetGame);
+  function changeDifficulty() {
+    showDifficultyScreen();
+  }
 
-  startPlacement();
+  overlayBtn.addEventListener('click', resetGame);
+  newGameBtn.addEventListener('click', changeDifficulty);
+
+  showDifficultyScreen();
 }
 
 document.addEventListener('DOMContentLoaded', init);

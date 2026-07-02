@@ -12,7 +12,23 @@
     <div id="message" class="message"></div>
   </header>
 
-  <main class="game">
+  <div id="difficulty-screen" class="difficulty-screen">
+    <h2 class="difficulty-screen__heading">Choose Difficulty</h2>
+    <div class="difficulty-screen__buttons">
+      <button id="diff-easy" class="btn btn--difficulty" data-difficulty="easy">
+        <span class="btn--difficulty__icon">&#x1F31F;</span>
+        <span class="btn--difficulty__label">Easy</span>
+        <span class="btn--difficulty__desc">Random shots, no targeting</span>
+      </button>
+      <button id="diff-normal" class="btn btn--difficulty" data-difficulty="normal">
+        <span class="btn--difficulty__icon">&#x2693;</span>
+        <span class="btn--difficulty__label">Normal</span>
+        <span class="btn--difficulty__desc">Hunt &amp; target AI</span>
+      </button>
+    </div>
+  </div>
+
+  <main class="game" hidden>
     <section class="game__panel game__panel--human">
       <h2 class="panel-title">Your Fleet</h2>
       <div id="human-board"></div>

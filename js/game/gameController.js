@@ -19,11 +19,15 @@ export const FLEET = [
  */
 
 export default class GameController {
-  constructor() {
+  /**
+   * @param {'easy'|'normal'} [difficulty='normal']
+   */
+  constructor(difficulty = 'normal') {
+    this.difficulty = difficulty;
     this.humanBoard = new Board();
     this.aiBoard = new Board();
     this.human = new Player('You', this.humanBoard);
-    this.ai = new AiPlayer(this.aiBoard, this.humanBoard);
+    this.ai = new AiPlayer(this.aiBoard, this.humanBoard, difficulty);
     this.phase = 'placement';
     this.winner = null;
 
@@ -87,11 +91,12 @@ export default class GameController {
   /**
    * Reset to a fresh game state.
    */
-  reset() {
+  reset(difficulty) {
+    if (difficulty !== undefined) this.difficulty = difficulty;
     this.humanBoard = new Board();
     this.aiBoard = new Board();
     this.human = new Player('You', this.humanBoard);
-    this.ai = new AiPlayer(this.aiBoard, this.humanBoard);
+    this.ai = new AiPlayer(this.aiBoard, this.humanBoard, this.difficulty);
     this.phase = 'placement';
     this.winner = null;
     this._emit({ type: 'reset' });
