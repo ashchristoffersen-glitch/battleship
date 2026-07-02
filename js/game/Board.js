@@ -107,17 +107,28 @@ export default class Board {
    */
   placeFleetRandomly(fleet) {
     for (const { name, length } of fleet) {
-      let placed = false;
-      while (!placed) {
-        const row = Math.floor(Math.random() * SIZE);
-        const col = Math.floor(Math.random() * SIZE);
-        const vertical = Math.random() < 0.5;
-        if (this.canPlaceShip(length, row, col, vertical)) {
-          this.placeShip(name, length, row, col, vertical);
-          placed = true;
+      const positions = this._enumerateValidPositions(length);
+      if (positions.length === 0) {
+        throw new Error(`No valid position for ${name} (length ${length})`);
+      }
+      const { row, col, vertical } = positions[Math.floor(Math.random() * positions.length)];
+      this.placeShip(name, length, row, col, vertical);
+    }
+  }
+
+  _enumerateValidPositions(length) {
+    const positions = [];
+    for (let r = 0; r < SIZE; r++) {
+      for (let c = 0; c < SIZE; c++) {
+        if (this.canPlaceShip(length, r, c, false)) {
+          positions.push({ row: r, col: c, vertical: false });
+        }
+        if (this.canPlaceShip(length, r, c, true)) {
+          positions.push({ row: r, col: c, vertical: true });
         }
       }
     }
+    return positions;
   }
 
   // ---- private helpers ----
