@@ -102,6 +102,8 @@ async function ap(){const rows=document.querySelectorAll('#ai-board .board .boar
 
 This must be run as a single line in the console (multi-line paste causes syntax errors). Takes ~40-80 seconds depending on ship locations.
 
+**Timing matters:** use a per-shot delay LONGER than the AI turn delay (`AI_TURN_DELAY_MS`, currently 600ms) — e.g. 750ms. A shorter delay (e.g. 300ms) fires clicks during the AI's turn (phase `ai-turn`), where they are ignored, leaving cells un-fired so the game never completes in one pass. If some enemy cells remain after a run, just re-run `ap()` — it skips already hit/miss cells.
+
 ## Game Over Flow
 
 The game-over overlay contains two buttons:
@@ -125,10 +127,24 @@ There is also a "New Game" button in the footer (visible after game-over) for th
 11. **New Game from overlay**: click "New Game" in the game-over overlay → difficulty screen appears, boards hidden
 12. **Boards hidden on difficulty screen**: after clicking "New Game", verify `<main class="game">` has `hidden` attribute and is not visible
 
+## Repeat-Fire Feedback (issue #5)
+
+Clicking an enemy cell that was already fired at (hit or miss) shows the message "You already fired at that square." — the cell state is unchanged and no AI turn is triggered. To test: fire at a cell, wait for the AI response, then click the SAME cell again and verify the message.
+
+## Scoreboard Persistence (issue #6)
+
+The footer scoreboard (`Wins`/`Losses`) is persisted to `localStorage` (key `battleship-scoreboard` via `js/game/Scoreboard.js`):
+- **Refresh** the page → scoreboard is preserved (NOT reset to 0-0).
+- **Play Again** (overlay or after game-over) → scoreboard keeps its running count.
+- **New Game** (overlay/footer button → difficulty screen) → scoreboard resets to 0-0.
+
+To test cleanly, reach game-over so the score is non-zero, then exercise refresh / Play Again / New Game and check the footer count each time. `localStorage` persists between reloads, so clear it (or click New Game) between unrelated test runs to start from 0-0.
+
 ## Tips
 
 - Console multi-line paste often breaks in Chrome devtools during automated testing. Write single-line scripts instead.
 - The AI delay is 600ms per turn (`AI_TURN_DELAY_MS`). Factor this into auto-play timing.
+- Opening/closing Chrome devtools (F12) reflows the page and re-centers the game-over overlay, so button coordinates shift. Click overlay buttons (Play Again / New Game) either before opening devtools or after re-locating them in a fresh screenshot — otherwise the click lands on empty space and the overlay stays up.
 
 ## Devin Secrets Needed
 
