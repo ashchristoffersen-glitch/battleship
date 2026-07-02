@@ -374,6 +374,21 @@ body {
   margin-bottom: 1.5rem;
 }
 
+/* ===== Placement invalid flash ===== */
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-4px); }
+  40% { transform: translateX(4px); }
+  60% { transform: translateX(-3px); }
+  80% { transform: translateX(3px); }
+}
+
+.cell.placement-invalid {
+  background: var(--color-hit) !important;
+  animation: shake 0.4s ease-out;
+}
+
 /* ===== Animations ===== */
 
 @keyframes hit-pulse {
@@ -393,6 +408,80 @@ body {
 
 .cell.miss {
   animation: miss-fade 0.3s ease-out;
+}
+
+/* ===== Difficulty selection ===== */
+
+.difficulty-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1rem;
+  min-height: 50vh;
+}
+
+.difficulty-screen[hidden] {
+  display: none;
+}
+
+.difficulty-screen__heading {
+  font-size: 1.4rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--color-accent);
+  margin-bottom: 2rem;
+}
+
+.difficulty-screen__buttons {
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.btn--difficulty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1.5rem 2.5rem;
+  min-width: 160px;
+  min-height: 120px;
+  background: var(--color-surface);
+  border: 3px solid var(--color-border);
+  border-radius: 16px;
+  color: var(--color-text);
+  cursor: pointer;
+  transition: border-color 0.2s, transform 0.15s, background 0.2s;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.btn--difficulty:hover,
+.btn--difficulty:focus-visible {
+  border-color: var(--color-accent);
+  transform: scale(1.04);
+  background: var(--color-border);
+}
+
+.btn--difficulty:active {
+  transform: scale(0.97);
+}
+
+.btn--difficulty__icon {
+  font-size: 2.2rem;
+  line-height: 1;
+}
+
+.btn--difficulty__label {
+  font-size: 1.3rem;
+  font-weight: 700;
+}
+
+.btn--difficulty__desc {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
 }
 
 /* ===== Responsive ===== */
