@@ -30,9 +30,14 @@ function buildDock(dockEl, shipStates, board, boardEl, onAllPlaced) {
   heading.classList.add('dock-heading');
   dockEl.appendChild(heading);
 
+  const rotateHint = document.createElement('p');
+  rotateHint.classList.add('dock-hint', 'dock-hint--rotate');
+  rotateHint.textContent = 'Click a ship to rotate';
+  dockEl.appendChild(rotateHint);
+
   const hint = document.createElement('p');
   hint.classList.add('dock-hint');
-  hint.textContent = 'Drag ships onto your board. Click a ship to rotate.';
+  hint.textContent = 'Drag ships onto your board.';
   dockEl.appendChild(hint);
 
   const shipList = document.createElement('div');

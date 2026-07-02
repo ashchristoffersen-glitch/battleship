@@ -211,8 +211,7 @@ body {
 
 #ai-board .cell.hit,
 #ai-board .cell.miss {
-  cursor: default;
-  pointer-events: none;
+  cursor: not-allowed;
 }
 
 /* ===== Dock (ship placement) ===== */
@@ -238,6 +237,17 @@ body {
   color: var(--color-text-muted);
   text-align: center;
   max-width: 180px;
+}
+
+.dock-hint--rotate {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--color-accent);
+  background: rgba(52, 152, 219, 0.12);
+  border: 1px solid rgba(52, 152, 219, 0.3);
+  border-radius: 999px;
+  padding: 0.35rem 0.75rem;
+  max-width: 220px;
 }
 
 .ship-list {
