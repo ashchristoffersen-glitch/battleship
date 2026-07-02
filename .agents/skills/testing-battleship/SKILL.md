@@ -59,14 +59,76 @@ To test victory/defeat without clicking every cell:
 2. Use `window._game.aiBoard.grid` to find enemy ship locations
 3. Click each enemy ship cell on the AI board via UI clicks (NOT programmatic `humanAttack()` — that bypasses the UI render cycle and gets stuck in `ai-turn` phase)
 
+## Difficulty Selection
+
+The app starts with a difficulty selection screen ("Choose Difficulty") before placement.
+- **Easy**: AI fires at random cells — no hunt/target behavior after hits.
+- **Normal**: AI uses parity-filtered hunt pool and targets adjacent cells after hits.
+
+To test difficulty behavior:
+1. Select Easy, place ships, play several turns. After AI hits your ship, verify the NEXT AI shot is NOT adjacent to the hit (random).
+2. Select Normal, place ships, play several turns. After AI hits your ship, verify the NEXT AI shot IS adjacent to the hit (targeting).
+
+## Invalid Placement Feedback
+
+When a ship is dropped on an invalid position:
+- Overlap: message "Can't place there — overlapping another ship." with danger styling
+- Out of bounds: "Can't place there — ship goes off the board." with danger styling
+- Cells flash with `.placement-invalid` class (red + shake animation)
+- Ship remains in dock (not placed)
+
+To test: place one ship, then attempt to place a second ship overlapping via the DragEvent console approach.
+
+## ARIA Labels
+
+Board cells have dynamic `aria-label` attributes:
+- Empty: `"A1, empty"`
+- Hit: `"F8, hit"`
+- Miss: `"B6, miss"`
+- Ship (human board): `"C1, ship"`
+- Sunk: includes ship name, e.g. `"D4, sunk, Carrier"`
+
+Board wrapper has `role="grid"` and `aria-label="Your fleet grid"` / `"Enemy waters grid"`.
+
+Verify via console: `document.querySelector('#human-board .cell.hit')?.getAttribute('aria-label')`
+
+## Auto-Play Script for Rapid Game Completion
+
+To quickly reach game-over state (e.g. to test New Game / Play Again buttons):
+
+```javascript
+async function ap(){const rows=document.querySelectorAll('#ai-board .board .board-row');for(let r=1;r<=10;r++){for(let c=0;c<10;c++){const cell=rows[r]?.querySelectorAll('.cell')[c];if(cell&&!cell.classList.contains('hit')&&!cell.classList.contains('miss')){cell.click();await new Promise(res=>setTimeout(res,800))}}}}ap()
+```
+
+This must be run as a single line in the console (multi-line paste causes syntax errors). Takes ~40-80 seconds depending on ship locations.
+
+## Game Over Flow
+
+The game-over overlay contains two buttons:
+- **"Play Again"**: resets to placement phase, same difficulty (no difficulty screen)
+- **"New Game"**: returns to difficulty selection screen, hides game boards
+
+There is also a "New Game" button in the footer (visible after game-over) for the same action.
+
 ## Standard Test Cases
 
-1. **Randomise placement**: click Randomise, verify 17 `.ship` cells on human board
-2. **Manual placement**: click ship to rotate (verify `.vertical` class), drag to board
-3. **Gameplay loop**: fire at enemy board, verify hit/miss classes and AI response
-4. **Sinking**: hit all cells of a ship, verify `.sunk` class (dark red)
-5. **Game over**: sink all enemy ships, verify overlay text and scoreboard
-6. **Reset**: click Play Again, verify boards cleared and dock reappears
+1. **Difficulty screen**: verify heading, Easy/Normal buttons with icons and descriptions
+2. **Randomise placement**: click Randomise, verify 17 `.ship` cells on human board
+3. **Manual placement**: click ship to rotate (verify `.vertical` class), drag to board
+4. **Invalid placement**: overlap and OOB scenarios with error messages
+5. **Gameplay loop**: fire at enemy board, verify hit/miss classes and AI response
+6. **AI behavior difference**: Easy (random after hit) vs Normal (adjacent after hit)
+7. **Sinking**: hit all cells of a ship, verify `.sunk` class (dark red)
+8. **Game over**: sink all enemy ships, verify overlay text and scoreboard
+9. **Play Again vs New Game**: verify correct flow for each button
+10. **ARIA labels**: inspect aria-label attributes during gameplay
+11. **New Game from overlay**: click "New Game" in the game-over overlay → difficulty screen appears, boards hidden
+12. **Boards hidden on difficulty screen**: after clicking "New Game", verify `<main class="game">` has `hidden` attribute and is not visible
+
+## Tips
+
+- Console multi-line paste often breaks in Chrome devtools during automated testing. Write single-line scripts instead.
+- The AI delay is 600ms per turn (`AI_TURN_DELAY_MS`). Factor this into auto-play timing.
 
 ## Devin Secrets Needed
 

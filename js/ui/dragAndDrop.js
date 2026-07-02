@@ -1,4 +1,5 @@
 import { FLEET } from '../game/gameController.js';
+import { show as showMessage } from './messageDisplay.js';
 
 /**
  * Manages drag-and-drop (and touch-drag) ship placement onto the human board.
@@ -195,7 +196,10 @@ function clearHighlights(boardEl) {
 // ---- Placement logic ----
 
 function attemptPlace(board, state, row, col, boardEl, dockEl, shipStates, onAllPlaced) {
-  if (!board.canPlaceShip(state.length, row, col, state.vertical)) return;
+  if (!board.canPlaceShip(state.length, row, col, state.vertical)) {
+    flashInvalid(boardEl, row, col, state.length, state.vertical, board);
+    return;
+  }
 
   board.placeShip(state.name, state.length, row, col, state.vertical);
   state.placed = true;
@@ -207,6 +211,41 @@ function attemptPlace(board, state, row, col, boardEl, dockEl, shipStates, onAll
     onAllPlaced();
   } else {
     buildDock(dockEl, shipStates, board, boardEl, onAllPlaced);
+  }
+}
+
+function flashInvalid(boardEl, row, col, length, vertical, board) {
+  const cells = [];
+  let outOfBounds = false;
+  let overlapping = false;
+
+  for (let i = 0; i < length; i++) {
+    const r = vertical ? row + i : row;
+    const c = vertical ? col : col + i;
+    if (r < 0 || r >= board.size || c < 0 || c >= board.size) {
+      outOfBounds = true;
+      continue;
+    }
+    const cell = boardEl.querySelector(`.cell[data-row="${r}"][data-col="${c}"]`);
+    if (cell) {
+      cells.push(cell);
+      if (board.grid[r][c] !== null) overlapping = true;
+    }
+  }
+
+  cells.forEach((cell) => {
+    cell.classList.add('placement-invalid');
+    cell.addEventListener('animationend', () => {
+      cell.classList.remove('placement-invalid');
+    }, { once: true });
+  });
+
+  if (overlapping) {
+    showMessage('Can\u2019t place there \u2014 overlapping another ship.', 'danger', 2000);
+  } else if (outOfBounds) {
+    showMessage('Can\u2019t place there \u2014 ship goes off the board.', 'danger', 2000);
+  } else {
+    showMessage('Can\u2019t place there.', 'danger', 2000);
   }
 }
 

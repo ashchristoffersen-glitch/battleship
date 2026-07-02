@@ -8,33 +8,39 @@ const DIRECTIONS = [
 ];
 
 /**
- * AI opponent using hunt-and-target with parity.
+ * AI opponent with two difficulty modes.
  *
- * Hunt mode:  fires at random parity-compliant cells.
- * Target mode: systematically probes neighbours of known hits
- *              along the discovered axis until the ship sinks.
+ * 'normal' (default): hunt-and-target with parity.
+ *   Hunt mode:  fires at random parity-compliant cells.
+ *   Target mode: systematically probes neighbours of known hits
+ *                along the discovered axis until the ship sinks.
+ *
+ * 'easy': fires at purely random un-attacked cells with no
+ *         hunt or target behaviour.
  */
 export default class AiPlayer extends Player {
   /**
    * @param {import('./Board.js').default} ownBoard  – the AI's own board.
    * @param {import('./Board.js').default} enemyBoard – the human's board (for querying state).
+   * @param {'easy'|'normal'} [difficulty='normal']
    */
-  constructor(ownBoard, enemyBoard) {
+  constructor(ownBoard, enemyBoard, difficulty = 'normal') {
     super('Computer', ownBoard);
     this.enemyBoard = enemyBoard;
+    this.difficulty = difficulty;
 
-    /** Cells still available for hunt-mode shots (parity-filtered). */
+    /** Cells still available for hunt-mode shots (parity-filtered in normal, all cells in easy). */
     this.huntPool = this._buildHuntPool();
 
     /**
-     * Stack of {row, col} targets queued after a hit.
+     * Stack of {row, col} targets queued after a hit (unused in easy mode).
      * @type {{ row: number, col: number }[]}
      */
     this.targetStack = [];
 
     /**
      * Unresolved hits that haven't yet been attributed to a sunk ship.
-     * Used to determine axis and to clean the stack on sink.
+     * Used to determine axis and to clean the stack on sink (unused in easy mode).
      * @type {{ row: number, col: number }[]}
      */
     this.unresolvedHits = [];
@@ -49,6 +55,10 @@ export default class AiPlayer extends Player {
     const outcome = this.enemyBoard.receiveAttack(row, col);
 
     this._removeFromHuntPool(row, col);
+
+    if (this.difficulty === 'easy') {
+      return { row, col, ...outcome };
+    }
 
     if (outcome.result === 'hit') {
       this.unresolvedHits.push({ row, col });
@@ -70,7 +80,7 @@ export default class AiPlayer extends Player {
     const size = this.enemyBoard.size;
     for (let r = 0; r < size; r++) {
       for (let c = 0; c < size; c++) {
-        if ((r + c) % 2 === 0) {
+        if (this.difficulty === 'easy' || (r + c) % 2 === 0) {
           pool.push({ row: r, col: c });
         }
       }
