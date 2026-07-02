@@ -154,6 +154,31 @@ The footer scoreboard (`Wins`/`Losses`) is persisted to `localStorage` (key `bat
 
 To test cleanly, reach game-over so the score is non-zero, then exercise refresh / Play Again / New Game and check the footer count each time. `localStorage` persists between reloads, so clear it (or click New Game) between unrelated test runs to start from 0-0.
 
+## Sound & Animation Feedback Layer
+
+All sounds are synthesised with the Web Audio API (`js/ui/sound.js`) — no audio files. CSS animations live in `css/styles.css`; DOM effect helpers in `js/ui/effects.js`. Effects are fire-and-forget (classes added then removed via `setTimeout`), so they add **zero** delay to the game loop and never extend `AI_TURN_DELAY_MS`.
+
+Audio needs a user gesture to start: click a difficulty button (or fire once) before expecting sound; the mute button and first fire also call `resume()`. When recording with sound, make sure the difficulty was clicked so the `AudioContext` is running.
+
+Event → sound + effect + message mapping (verify each):
+
+| Event | Sound fn | CSS class / effect | Message |
+|-------|----------|--------------------|---------|
+| Player hits enemy ship | `playHit()` | `.cell--impact` on the struck enemy cell | `You: Hit!` |
+| Player sinks enemy ship | `playSinkEnemy()` | `.cell--sink` on that ship's enemy cells (`getShipCells`) | `You sank their [ship]! X ships to go.` |
+| AI hits player ship | `playIncomingHit()` | `.board--hit-shake` + red glow on `#human-board`; `.board-hit-overlay.is-visible` shows large `HIT` over the player board | `Computer: Hit!` |
+| AI sinks player ship | `playSinkPlayer()` | `body.screen-shake` + `.board--hit-shake` + `.cell--sink` on the player's sunk ship cells (~1s) | `They sank your [ship]! X of your ships remain.` |
+| Miss (either side) | `playMiss()` (much quieter than hits) | existing `.cell.miss` fade only | `You: Miss.` / `Computer: Miss.` |
+
+Test cases:
+
+14. **Player hit impact + sound**: fire at an enemy ship cell; the cell briefly gets `.cell--impact` (flash/ripple) and a short hit sound plays. Miss cells get only the subtle `.cell.miss` fade and a clearly quieter miss sound.
+15. **Player sink**: sink an enemy ship; its cells run the `.cell--sink` animation, a distinct sink sound plays, and the message reads `You sank their [ship]! X ships to go.` (X = enemy ships still afloat).
+16. **AI hit on player**: let the AI hit one of your ships; `#human-board` shakes with a red glow, a large `HIT` overlay (`.board-hit-overlay.is-visible`) flashes across your board, a distinct incoming-hit sound plays, and the message reads `Computer: Hit!`.
+17. **AI sink of player ship**: let the AI sink one of your ships; the whole screen shakes (`body.screen-shake`), the sunk ship's cells run the ~1s `.cell--sink` animation, a distinct sink sound plays, and the message reads `They sank your [ship]! X of your ships remain.`
+18. **Mute toggle + persistence**: the `#mute-btn` in the header is visible during play, defaults to sound on (🔊, `aria-pressed="false"`). Clicking it toggles to 🔇 (`aria-pressed="true"`, `aria-label="Unmute sound"`) and silences all sounds; the preference persists in `localStorage` key `battleship-muted` and survives a page refresh (button reflects the stored state on load). Animations still play when muted.
+19. **prefers-reduced-motion**: with the OS/browser reduced-motion setting on, the shake animations (`.board--hit-shake`, `body.screen-shake`) are disabled (`animation: none`) but messages and sounds still fire, and the `HIT` overlay still appears (without the scale burst). Emulate via DevTools → Rendering → "Emulate CSS prefers-reduced-motion: reduce".
+
 ## Tips
 
 - Console multi-line paste often breaks in Chrome devtools during automated testing. Write single-line scripts instead.

@@ -4,12 +4,16 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Battleship</title>
+  <link rel="icon" href="data:,">
   <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
   <header class="header">
     <h1 class="header__title">Battleship</h1>
-    <div id="message" class="message"></div>
+    <div class="header__controls">
+      <div id="message" class="message" role="status" aria-live="polite"></div>
+      <button id="mute-btn" class="btn btn--secondary mute-btn" type="button" aria-pressed="false" aria-label="Mute sound">🔊</button>
+    </div>
   </header>
 
   <div id="difficulty-screen" class="difficulty-screen">

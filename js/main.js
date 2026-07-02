@@ -3,12 +3,31 @@ import Scoreboard from './game/Scoreboard.js';
 import { createBoardElement, renderBoard } from './ui/boardRenderer.js';
 import { init as initMessage, show as showMessage } from './ui/messageDisplay.js';
 import { initPlacement } from './ui/dragAndDrop.js';
+import {
+  ensureHitOverlay,
+  impactCell,
+  screenShake,
+  shakeHumanBoard,
+  showHitOverlay,
+  sinkShipCells,
+} from './ui/effects.js';
+import {
+  isMuted,
+  playHit,
+  playIncomingHit,
+  playMiss,
+  playSinkEnemy,
+  playSinkPlayer,
+  resume,
+  toggleMuted,
+} from './ui/sound.js';
 
 const AI_TURN_DELAY_MS = 600;
 
 let game = null;
 let humanBoardEl;
 let aiBoardEl;
+let humanBoardContainerEl;
 
 function init() {
   const messageEl = document.getElementById('message');
@@ -24,6 +43,7 @@ function init() {
   const gameMain = document.querySelector('.game');
   const winsEl = document.getElementById('wins');
   const lossesEl = document.getElementById('losses');
+  const muteBtn = document.getElementById('mute-btn');
 
   let storage = null;
   try {
@@ -33,23 +53,39 @@ function init() {
   }
 
   const scoreboard = new Scoreboard(storage);
-  renderScores();
 
   initMessage(messageEl);
+
+  function syncMuteButton() {
+    const muted = isMuted();
+    muteBtn.textContent = muted ? '🔇' : '🔊';
+    muteBtn.setAttribute('aria-pressed', String(muted));
+    muteBtn.setAttribute('aria-label', muted ? 'Unmute sound' : 'Mute sound');
+  }
 
   function renderScores() {
     winsEl.textContent = scoreboard.wins;
     lossesEl.textContent = scoreboard.losses;
   }
 
+  function resumeAudio() {
+    void resume();
+  }
+
+  function remainingShips(board) {
+    return board.ships.filter((ship) => !ship.isSunk()).length;
+  }
+
   function setupBoards() {
     humanContainer.innerHTML = '';
     aiContainer.innerHTML = '';
 
+    humanBoardContainerEl = humanContainer;
     humanBoardEl = createBoardElement('human-board', game.humanBoard.size);
     aiBoardEl = createBoardElement('ai-board', game.aiBoard.size, onAiCellClick);
 
     humanContainer.appendChild(humanBoardEl);
+    ensureHitOverlay(humanContainer);
     aiContainer.appendChild(aiBoardEl);
   }
 
@@ -62,6 +98,7 @@ function init() {
   }
 
   function onDifficultyChosen(difficulty) {
+    resumeAudio();
     game = new GameController(difficulty);
     diffScreen.hidden = true;
     gameMain.hidden = false;
@@ -70,6 +107,11 @@ function init() {
 
   document.getElementById('diff-easy').addEventListener('click', () => onDifficultyChosen('easy'));
   document.getElementById('diff-normal').addEventListener('click', () => onDifficultyChosen('normal'));
+  muteBtn.addEventListener('click', () => {
+    toggleMuted();
+    syncMuteButton();
+    if (!isMuted()) resumeAudio();
+  });
 
   function startPlacement() {
     setupBoards();
@@ -94,11 +136,12 @@ function init() {
       return;
     }
 
+    resumeAudio();
     const outcome = game.humanAttack(row, col);
     if (!outcome) return;
 
     renderBoards();
-    announceAttack('You', outcome);
+    handleHumanAttackFeedback(row, col, outcome);
 
     if (game.phase === 'game-over') {
       onGameOver();
@@ -111,7 +154,7 @@ function init() {
       if (!aiOutcome) return;
 
       renderBoards();
-      announceAttack('Computer', aiOutcome);
+      handleAiAttackFeedback(aiOutcome);
 
       if (game.phase === 'game-over') {
         onGameOver();
@@ -119,14 +162,51 @@ function init() {
     }, AI_TURN_DELAY_MS);
   }
 
-  function announceAttack(attacker, { result, ship, sunk }) {
-    if (sunk) {
-      showMessage(`${attacker} sunk the ${ship.name}!`, 'danger');
-    } else if (result === 'hit') {
-      showMessage(`${attacker}: Hit!`, 'success', 2000);
-    } else {
-      showMessage(`${attacker}: Miss.`, 'info', 2000);
+  function handleHumanAttackFeedback(row, col, outcome) {
+    if (outcome.sunk) {
+      playSinkEnemy();
+      sinkShipCells(aiBoardEl, game.aiBoard.getShipCells(outcome.ship));
+      showMessage(
+        `You sank their ${outcome.ship.name}! ${remainingShips(game.aiBoard)} ships to go.`,
+        'danger',
+      );
+      return;
     }
+
+    if (outcome.result === 'hit') {
+      playHit();
+      impactCell(aiBoardEl, row, col);
+      showMessage('You: Hit!', 'success', 2000);
+      return;
+    }
+
+    playMiss();
+    showMessage('You: Miss.', 'info', 2000);
+  }
+
+  function handleAiAttackFeedback(aiOutcome) {
+    if (aiOutcome.sunk) {
+      playSinkPlayer();
+      screenShake();
+      shakeHumanBoard(humanBoardEl);
+      sinkShipCells(humanBoardEl, game.humanBoard.getShipCells(aiOutcome.ship));
+      showMessage(
+        `They sank your ${aiOutcome.ship.name}! ${remainingShips(game.humanBoard)} of your ships remain.`,
+        'danger',
+      );
+      return;
+    }
+
+    if (aiOutcome.result === 'hit') {
+      playIncomingHit();
+      shakeHumanBoard(humanBoardEl);
+      showHitOverlay(humanBoardContainerEl);
+      showMessage('Computer: Hit!', 'success', 2000);
+      return;
+    }
+
+    playMiss();
+    showMessage('Computer: Miss.', 'info', 2000);
   }
 
   function renderBoards() {
@@ -136,8 +216,6 @@ function init() {
   }
 
   function onGameOver() {
-    renderBoards();
-
     if (game.winner === 'human') {
       scoreboard.recordWin();
       overlayTitle.textContent = 'Victory!';
@@ -171,6 +249,7 @@ function init() {
   overlayNewGameBtn.addEventListener('click', changeDifficulty);
   newGameBtn.addEventListener('click', changeDifficulty);
 
+  syncMuteButton();
   showDifficultyScreen();
 }
 
