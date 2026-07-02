@@ -91,6 +91,10 @@ body {
   flex-wrap: wrap;
 }
 
+.game[hidden] {
+  display: none;
+}
+
 .game__panel {
   display: flex;
   flex-direction: column;
@@ -372,6 +376,10 @@ body {
 .overlay__content p {
   color: var(--color-text-muted);
   margin-bottom: 1.5rem;
+}
+
+.overlay__content .btn + .btn {
+  margin-top: 0.75rem;
 }
 
 /* ===== Placement invalid flash ===== */

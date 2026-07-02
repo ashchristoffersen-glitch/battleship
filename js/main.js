@@ -144,7 +144,10 @@ function init() {
     showDifficultyScreen();
   }
 
+  const overlayNewGameBtn = document.getElementById('overlay-new-game-btn');
+
   overlayBtn.addEventListener('click', resetGame);
+  overlayNewGameBtn.addEventListener('click', changeDifficulty);
   newGameBtn.addEventListener('click', changeDifficulty);
 
   showDifficultyScreen();
