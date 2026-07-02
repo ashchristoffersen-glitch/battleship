@@ -5,10 +5,12 @@ import { init as initMessage, show as showMessage } from './ui/messageDisplay.js
 import { initPlacement } from './ui/dragAndDrop.js';
 import {
   ensureHitOverlay,
+  ensureSinkOverlay,
   impactCell,
   screenShake,
   shakeHumanBoard,
   showHitOverlay,
+  showSinkOverlay,
   sinkShipCells,
 } from './ui/effects.js';
 import {
@@ -28,6 +30,7 @@ let game = null;
 let humanBoardEl;
 let aiBoardEl;
 let humanBoardContainerEl;
+let aiBoardContainerEl;
 
 function init() {
   const messageEl = document.getElementById('message');
@@ -81,12 +84,16 @@ function init() {
     aiContainer.innerHTML = '';
 
     humanBoardContainerEl = humanContainer;
+    aiBoardContainerEl = aiContainer;
     humanBoardEl = createBoardElement('human-board', game.humanBoard.size);
     aiBoardEl = createBoardElement('ai-board', game.aiBoard.size, onAiCellClick);
 
     humanContainer.appendChild(humanBoardEl);
     ensureHitOverlay(humanContainer);
+    ensureSinkOverlay(humanContainer);
     aiContainer.appendChild(aiBoardEl);
+    ensureHitOverlay(aiContainer);
+    ensureSinkOverlay(aiContainer);
   }
 
   function showDifficultyScreen() {
@@ -164,12 +171,11 @@ function init() {
 
   function handleHumanAttackFeedback(row, col, outcome) {
     if (outcome.sunk) {
+      const message = `You sank their ${outcome.ship.name}! ${remainingShips(game.aiBoard)} ships to go.`;
       playSinkEnemy();
       sinkShipCells(aiBoardEl, game.aiBoard.getShipCells(outcome.ship));
-      showMessage(
-        `You sank their ${outcome.ship.name}! ${remainingShips(game.aiBoard)} ships to go.`,
-        'danger',
-      );
+      showSinkOverlay(aiBoardContainerEl, message);
+      showMessage(message, 'danger');
       return;
     }
 
@@ -186,14 +192,13 @@ function init() {
 
   function handleAiAttackFeedback(aiOutcome) {
     if (aiOutcome.sunk) {
+      const message = `They sank your ${aiOutcome.ship.name}! ${remainingShips(game.humanBoard)} of your ships remain.`;
       playSinkPlayer();
       screenShake();
       shakeHumanBoard(humanBoardEl);
       sinkShipCells(humanBoardEl, game.humanBoard.getShipCells(aiOutcome.ship));
-      showMessage(
-        `They sank your ${aiOutcome.ship.name}! ${remainingShips(game.humanBoard)} of your ships remain.`,
-        'danger',
-      );
+      showSinkOverlay(humanBoardContainerEl, message);
+      showMessage(message, 'danger');
       return;
     }
 

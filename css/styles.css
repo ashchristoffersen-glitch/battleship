@@ -133,6 +133,10 @@ body {
   border-radius: 4px;
 }
 
+.dock[hidden] {
+  display: none;
+}
+
 .board--hit-shake {
   animation: board-hit-shake 0.42s ease-out;
   box-shadow: 0 0 0 2px rgba(231, 76, 60, 0.32), 0 0 18px rgba(231, 76, 60, 0.38);
@@ -143,6 +147,11 @@ body {
   display: inline-block;
 }
 
+
+#ai-board {
+  position: relative;
+  display: inline-block;
+}
 .board-hit-overlay {
   position: absolute;
   inset: 0;
@@ -162,6 +171,35 @@ body {
 
 .board-hit-overlay.is-visible {
   animation: hit-overlay-burst 0.52s ease-out;
+}
+
+.board-sink-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  user-select: none;
+  box-sizing: border-box;
+  padding: 0.75rem 8%;
+  text-align: center;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: normal;
+  line-height: 1.2;
+  font-size: clamp(0.84rem, 2.6vw, 1.35rem);
+  font-weight: 800;
+  color: rgba(255, 255, 255, 0.97);
+  text-shadow: 0 0 10px rgba(0, 0, 0, 0.8), 0 0 24px rgba(0, 0, 0, 0.6);
+  background: linear-gradient(180deg, rgba(11, 22, 40, 0.58), rgba(11, 22, 40, 0.28));
+  border-radius: inherit;
+  opacity: 0;
+  transform: scale(0.94);
+}
+
+.board-sink-overlay.is-visible {
+  animation: sink-overlay-burst 1.5s ease-out;
 }
 
 .board-row {
@@ -468,6 +506,25 @@ body {
   }
 }
 
+@keyframes sink-overlay-burst {
+  0% {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+  18% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  82% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+}
+
 body.screen-shake {
   animation: screen-shake 0.52s ease-in-out;
 }
@@ -714,6 +771,13 @@ body.screen-shake {
   }
 }
 
+@media (max-width: 390px) {
+  .board-sink-overlay {
+    font-size: clamp(0.76rem, 3.2vw, 1rem);
+    padding: 0.5rem 6%;
+  }
+}
+
 @media (max-width: 480px) {
   :root {
     --cell-size: 28px;
@@ -770,6 +834,12 @@ body.screen-shake {
   }
 
   .board-hit-overlay.is-visible {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  .board-sink-overlay.is-visible {
     animation: none;
     opacity: 1;
     transform: none;
