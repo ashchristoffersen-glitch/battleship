@@ -1,4 +1,5 @@
 import GameController from './game/gameController.js';
+import Scoreboard from './game/Scoreboard.js';
 import { createBoardElement, renderBoard } from './ui/boardRenderer.js';
 import { init as initMessage, show as showMessage } from './ui/messageDisplay.js';
 import { initPlacement } from './ui/dragAndDrop.js';
@@ -8,8 +9,6 @@ const AI_TURN_DELAY_MS = 600;
 let game = null;
 let humanBoardEl;
 let aiBoardEl;
-let wins = 0;
-let losses = 0;
 
 function init() {
   const messageEl = document.getElementById('message');
@@ -23,8 +22,25 @@ function init() {
   const overlayBtn = document.getElementById('overlay-btn');
   const diffScreen = document.getElementById('difficulty-screen');
   const gameMain = document.querySelector('.game');
+  const winsEl = document.getElementById('wins');
+  const lossesEl = document.getElementById('losses');
+
+  let storage = null;
+  try {
+    storage = window.localStorage;
+  } catch {
+    storage = null;
+  }
+
+  const scoreboard = new Scoreboard(storage);
+  renderScores();
 
   initMessage(messageEl);
+
+  function renderScores() {
+    winsEl.textContent = scoreboard.wins;
+    lossesEl.textContent = scoreboard.losses;
+  }
 
   function setupBoards() {
     humanContainer.innerHTML = '';
@@ -73,6 +89,10 @@ function init() {
 
   function onAiCellClick(row, col) {
     if (game.phase !== 'player-turn') return;
+    if (game.aiBoard.attacks[row][col] !== null) {
+      showMessage('You already fired at that square.', 'info', 2000);
+      return;
+    }
 
     const outcome = game.humanAttack(row, col);
     if (!outcome) return;
@@ -119,17 +139,16 @@ function init() {
     renderBoards();
 
     if (game.winner === 'human') {
-      wins++;
+      scoreboard.recordWin();
       overlayTitle.textContent = 'Victory!';
       overlayText.textContent = 'You destroyed the enemy fleet.';
     } else {
-      losses++;
+      scoreboard.recordLoss();
       overlayTitle.textContent = 'Defeat';
       overlayText.textContent = 'The computer sank your fleet.';
     }
 
-    document.getElementById('wins').textContent = wins;
-    document.getElementById('losses').textContent = losses;
+    renderScores();
 
     overlay.hidden = false;
     newGameBtn.hidden = false;
@@ -141,6 +160,8 @@ function init() {
   }
 
   function changeDifficulty() {
+    scoreboard.reset();
+    renderScores();
     showDifficultyScreen();
   }
 

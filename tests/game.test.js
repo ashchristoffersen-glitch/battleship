@@ -330,6 +330,38 @@ describe('GameController', () => {
     assert.equal(result, null);
   });
 
+  it('rejects repeat attacks on the same AI board cell', () => {
+    const gc = new GameController();
+    gc.humanBoard.placeFleetRandomly(FLEET);
+    gc.startGame();
+
+    let row = -1;
+    let col = -1;
+    for (let r = 0; r < 10; r++) {
+      for (let c = 0; c < 10; c++) {
+        if (gc.aiBoard.grid[r][c] === null) {
+          row = r;
+          col = c;
+          break;
+        }
+      }
+      if (row !== -1) break;
+    }
+
+    assert.notEqual(row, -1);
+    const firstOutcome = gc.humanAttack(row, col);
+    assert.equal(firstOutcome.result, 'miss');
+    assert.equal(gc.phase, 'ai-turn');
+
+    gc.aiAttack();
+    assert.equal(gc.phase, 'player-turn');
+    assert.equal(gc.aiBoard.attacks[row][col], 'miss');
+
+    const repeatOutcome = gc.humanAttack(row, col);
+    assert.equal(repeatOutcome, null);
+    assert.equal(gc.aiBoard.attacks[row][col], 'miss');
+  });
+
   it('full game loop ends in game-over', () => {
     const gc = new GameController();
     gc.humanBoard.placeFleetRandomly(FLEET);
