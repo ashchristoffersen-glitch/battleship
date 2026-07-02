@@ -11,13 +11,16 @@ export function createBoardElement(id, size, onCellClick) {
   const wrapper = document.createElement('div');
   wrapper.classList.add('board');
   wrapper.id = id;
+  wrapper.setAttribute('role', 'grid');
+  wrapper.setAttribute('aria-label', onCellClick ? 'Enemy waters grid' : 'Your fleet grid');
 
   // Column headers row
   const headerRow = document.createElement('div');
   headerRow.classList.add('board-row', 'header-row');
-  headerRow.appendChild(createLabel(''));
+  headerRow.setAttribute('role', 'row');
+  headerRow.appendChild(createLabel('', 'columnheader'));
   for (let c = 0; c < size; c++) {
-    headerRow.appendChild(createLabel(COLUMN_LABELS[c]));
+    headerRow.appendChild(createLabel(COLUMN_LABELS[c], 'columnheader'));
   }
   wrapper.appendChild(headerRow);
 
@@ -25,13 +28,16 @@ export function createBoardElement(id, size, onCellClick) {
   for (let r = 0; r < size; r++) {
     const row = document.createElement('div');
     row.classList.add('board-row');
-    row.appendChild(createLabel(String(r + 1)));
+    row.setAttribute('role', 'row');
+    row.appendChild(createLabel(String(r + 1), 'rowheader'));
 
     for (let c = 0; c < size; c++) {
       const cell = document.createElement('div');
       cell.classList.add('cell');
+      cell.setAttribute('role', 'gridcell');
       cell.dataset.row = r;
       cell.dataset.col = c;
+      cell.setAttribute('aria-label', `${COLUMN_LABELS[c]}${r + 1}, empty`);
 
       if (onCellClick) {
         cell.addEventListener('click', () => onCellClick(r, c));
@@ -63,28 +69,39 @@ export function renderBoard(boardEl, board, { showShips, gameOver = false }) {
 
     cell.className = 'cell';
 
+    let ariaState = 'empty';
+
     if (attack === 'hit') {
       cell.classList.add('hit');
+      const gridCell = board.grid[r][c];
+      if (gridCell && gridCell.ship.isSunk()) {
+        cell.classList.add('sunk');
+        ariaState = `sunk, ${gridCell.ship.name}`;
+      } else {
+        ariaState = 'hit';
+      }
     } else if (attack === 'miss') {
       cell.classList.add('miss');
+      ariaState = 'miss';
     } else if (showShips && occupied) {
       cell.classList.add('ship');
+      ariaState = 'ship';
     }
 
     if (gameOver && occupied && attack !== 'hit') {
       cell.classList.add('ship-reveal');
+      ariaState = 'ship revealed';
     }
 
-    const gridCell = board.grid[r][c];
-    if (gridCell && gridCell.ship.isSunk() && attack === 'hit') {
-      cell.classList.add('sunk');
-    }
+    const coord = `${COLUMN_LABELS[c]}${r + 1}`;
+    cell.setAttribute('aria-label', `${coord}, ${ariaState}`);
   });
 }
 
-function createLabel(text) {
+function createLabel(text, role) {
   const el = document.createElement('div');
   el.classList.add('cell-label');
   el.textContent = text;
+  if (role) el.setAttribute('role', role);
   return el;
 }
