@@ -42,6 +42,17 @@ function withContext(callback) {
   if (!context) return;
 
   try {
+    if (context.state === 'suspended') {
+      context.resume()
+        .then(() => {
+          try {
+            callback(context);
+          } catch {}
+        })
+        .catch(() => {});
+      return;
+    }
+
     callback(context);
   } catch {}
 }
@@ -367,6 +378,18 @@ export function playDefeat() {
 export function playMiss() {
   if (muted) return;
   playMissSound();
+}
+
+export function unlockAudio() {
+  const context = getAudioContext();
+  if (!context) return false;
+
+  try {
+    void context.resume();
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 export function isMuted() {
