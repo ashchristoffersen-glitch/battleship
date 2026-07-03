@@ -385,7 +385,15 @@ export function unlockAudio() {
   if (!context) return false;
 
   try {
-    void context.resume();
+    if (context.state === 'suspended') {
+      void context.resume();
+    }
+
+    const buffer = context.createBuffer(1, 1, 22050);
+    const source = context.createBufferSource();
+    source.buffer = buffer;
+    source.connect(context.destination);
+    source.start(0);
     return true;
   } catch {
     return false;

@@ -62,6 +62,7 @@ function buildDock(dockEl, shipStates, board, boardEl, onAllPlaced) {
 
     // Click to rotate
     piece.addEventListener('click', () => {
+      if (Date.now() < suppressClickUntil) return;
       state.vertical = !state.vertical;
       renderPiece(piece, state);
     });
@@ -76,9 +77,9 @@ function buildDock(dockEl, shipStates, board, boardEl, onAllPlaced) {
     const DRAG_THRESHOLD = 10;
     let touchClone = null;
     let dragging = false;
+    let suppressClickUntil = 0;
     let startX = 0;
     let startY = 0;
-    let startTime = 0;
 
     function createTouchClone(touch) {
       if (touchClone) return;
@@ -106,7 +107,6 @@ function buildDock(dockEl, shipStates, board, boardEl, onAllPlaced) {
       const touch = e.touches[0];
       startX = touch.clientX;
       startY = touch.clientY;
-      startTime = Date.now();
       dragging = false;
       touchClone = null;
     }, { passive: true });
@@ -131,11 +131,11 @@ function buildDock(dockEl, shipStates, board, boardEl, onAllPlaced) {
     }, { passive: false });
 
     piece.addEventListener('touchend', (e) => {
+      suppressClickUntil = Date.now() + 700;
       const touch = e.changedTouches[0];
       const wasDragging = dragging;
 
       if (!wasDragging) {
-        e.preventDefault();
         state.vertical = !state.vertical;
         renderPiece(piece, state);
         clearTouchDrag();
