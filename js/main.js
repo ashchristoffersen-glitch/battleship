@@ -7,19 +7,23 @@ import {
   ensureHitOverlay,
   ensureSinkOverlay,
   impactCell,
+  pulseDefeatBoard,
   screenShake,
   shakeHumanBoard,
   showHitOverlay,
   showSinkOverlay,
+  showVictoryConfetti,
   sinkShipCells,
 } from './ui/effects.js';
 import {
   isMuted,
+  playDefeat,
   playHit,
   playIncomingHit,
   playMiss,
   playSinkEnemy,
   playSinkPlayer,
+  playVictory,
   resume,
   toggleMuted,
 } from './ui/sound.js';
@@ -92,7 +96,6 @@ function init() {
     ensureHitOverlay(humanContainer);
     ensureSinkOverlay(humanContainer);
     aiContainer.appendChild(aiBoardEl);
-    ensureHitOverlay(aiContainer);
     ensureSinkOverlay(aiContainer);
   }
 
@@ -225,10 +228,14 @@ function init() {
       scoreboard.recordWin();
       overlayTitle.textContent = 'Victory!';
       overlayText.textContent = 'You destroyed the enemy fleet.';
+      playVictory();
+      showVictoryConfetti();
     } else {
       scoreboard.recordLoss();
       overlayTitle.textContent = 'Defeat';
       overlayText.textContent = 'The computer sank your fleet.';
+      playDefeat();
+      pulseDefeatBoard(humanBoardEl);
     }
 
     renderScores();

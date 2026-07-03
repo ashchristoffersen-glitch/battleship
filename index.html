@@ -10,10 +10,7 @@
 <body>
   <header class="header">
     <h1 class="header__title">Battleship</h1>
-    <div class="header__controls">
-      <div id="message" class="message" role="status" aria-live="polite"></div>
-      <button id="mute-btn" class="btn btn--secondary mute-btn" type="button" aria-pressed="false" aria-label="Mute sound">🔊</button>
-    </div>
+    <div id="message" class="message" role="status" aria-live="polite"></div>
   </header>
 
   <div id="difficulty-screen" class="difficulty-screen">
@@ -49,9 +46,12 @@
 
   <footer class="footer">
     <button id="new-game-btn" class="btn btn--primary" hidden>New Game</button>
-    <div id="scoreboard" class="scoreboard">
-      <span>Wins: <strong id="wins">0</strong></span>
-      <span>Losses: <strong id="losses">0</strong></span>
+    <div class="footer__cluster">
+      <div id="scoreboard" class="scoreboard">
+        <span>Wins: <strong id="wins">0</strong></span>
+        <span>Losses: <strong id="losses">0</strong></span>
+      </div>
+      <button id="mute-btn" class="btn btn--secondary mute-btn" type="button" aria-pressed="false" aria-label="Mute sound">🔊</button>
     </div>
   </footer>
 

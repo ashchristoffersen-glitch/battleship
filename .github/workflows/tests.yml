@@ -15,4 +15,4 @@ jobs:
         with:
           node-version: '22'
       - name: Run tests
-        run: node --test tests/game.test.js
+        run: node --test tests/*.js
