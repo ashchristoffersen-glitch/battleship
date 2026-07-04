@@ -433,6 +433,24 @@ body {
   margin-top: 4px;
 }
 
+@media (pointer: coarse) {
+  .ship-piece {
+    min-width: 44px;
+    min-height: 44px;
+    padding: 0.5rem 0.9rem;
+    touch-action: manipulation;
+  }
+
+  .ship-segment {
+    width: 28px;
+    height: 28px;
+  }
+
+  .ship-piece-label {
+    font-size: 0.8rem;
+  }
+}
+
 /* ===== Buttons ===== */
 
 .btn {

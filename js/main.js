@@ -25,6 +25,7 @@ import {
   playSinkPlayer,
   playVictory,
   resume,
+  unlockAudio,
   toggleMuted,
 } from './ui/sound.js';
 
@@ -108,6 +109,7 @@ function init() {
   }
 
   function onDifficultyChosen(difficulty) {
+    unlockAudio();
     resumeAudio();
     game = new GameController(difficulty);
     diffScreen.hidden = true;
@@ -120,7 +122,10 @@ function init() {
   muteBtn.addEventListener('click', () => {
     toggleMuted();
     syncMuteButton();
-    if (!isMuted()) resumeAudio();
+    if (!isMuted()) {
+      unlockAudio();
+      resumeAudio();
+    }
   });
 
   function startPlacement() {
