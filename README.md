@@ -48,6 +48,3 @@ node --test tests/game.test.js
 ```
 
 Requires Node.js 18+ (uses built-in `node:test` runner).
-Sun Jul  5 22:44:34 UTC 2026
-
-<!-- deploy: trigger fresh Pages build 2026-07-05T22:44:34Z -->
