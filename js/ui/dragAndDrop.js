@@ -20,6 +20,10 @@ export function initPlacement(board, boardEl, dockEl, onAllPlaced) {
   buildDock(dockEl, shipStates, board, boardEl, onAllPlaced);
 }
 
+export function exceedsDragThreshold(dx, dy, threshold = 10) {
+  return Math.hypot(dx, dy) > threshold;
+}
+
 // ---- Dock rendering ----
 
 function buildDock(dockEl, shipStates, board, boardEl, onAllPlaced) {
@@ -58,6 +62,7 @@ function buildDock(dockEl, shipStates, board, boardEl, onAllPlaced) {
 
     // Click to rotate
     piece.addEventListener('click', () => {
+      if (Date.now() < suppressClickUntil) return;
       state.vertical = !state.vertical;
       renderPiece(piece, state);
     });
@@ -69,12 +74,16 @@ function buildDock(dockEl, shipStates, board, boardEl, onAllPlaced) {
     });
 
     // Touch drag support
+    const DRAG_THRESHOLD = 10;
     let touchClone = null;
-    let touchMoved = false;
+    let dragging = false;
+    let suppressClickUntil = 0;
+    let startX = 0;
+    let startY = 0;
 
-    piece.addEventListener('touchstart', (e) => {
-      touchMoved = false;
-      const touch = e.touches[0];
+    function createTouchClone(touch) {
+      if (touchClone) return;
+
       touchClone = piece.cloneNode(true);
       touchClone.classList.add('ship-piece--dragging');
       touchClone.style.position = 'fixed';
@@ -83,36 +92,69 @@ function buildDock(dockEl, shipStates, board, boardEl, onAllPlaced) {
       touchClone.style.opacity = '0.8';
       positionTouchClone(touchClone, touch);
       document.body.appendChild(touchClone);
-    }, { passive: true });
+    }
 
-    piece.addEventListener('touchmove', (e) => {
-      touchMoved = true;
-      e.preventDefault();
-      if (touchClone) positionTouchClone(touchClone, e.touches[0]);
-      highlightDropTarget(boardEl, e.touches[0], state.length, state.vertical);
-    }, { passive: false });
-
-    piece.addEventListener('touchend', (e) => {
+    function clearTouchDrag() {
       if (touchClone) {
         touchClone.remove();
         touchClone = null;
       }
       clearHighlights(boardEl);
+      dragging = false;
+    }
 
-      if (!touchMoved) {
-        state.vertical = !state.vertical;
-        renderPiece(piece, state);
+    piece.addEventListener('touchstart', (e) => {
+      const touch = e.touches[0];
+      startX = touch.clientX;
+      startY = touch.clientY;
+      dragging = false;
+      touchClone = null;
+    }, { passive: true });
+
+    piece.addEventListener('touchmove', (e) => {
+      const touch = e.touches[0];
+      const dx = touch.clientX - startX;
+      const dy = touch.clientY - startY;
+
+      if (!dragging && !exceedsDragThreshold(dx, dy, DRAG_THRESHOLD)) {
         return;
       }
 
+      if (!dragging) {
+        dragging = true;
+        createTouchClone(touch);
+      }
+
+      e.preventDefault();
+      if (touchClone) positionTouchClone(touchClone, touch);
+      highlightDropTarget(boardEl, touch, state.length, state.vertical);
+    }, { passive: false });
+
+    piece.addEventListener('touchend', (e) => {
+      suppressClickUntil = Date.now() + 700;
       const touch = e.changedTouches[0];
+      const wasDragging = dragging;
+
+      if (!wasDragging) {
+        state.vertical = !state.vertical;
+        renderPiece(piece, state);
+        clearTouchDrag();
+        return;
+      }
+
       const target = document.elementFromPoint(touch.clientX, touch.clientY);
+      clearTouchDrag();
+
       if (target && target.classList.contains('cell') && target.closest('#human-board')) {
         const row = Number(target.dataset.row);
         const col = Number(target.dataset.col);
         attemptPlace(board, state, row, col, boardEl, dockEl, shipStates, onAllPlaced);
       }
-    });
+    }, { passive: false });
+
+    piece.addEventListener('touchcancel', () => {
+      clearTouchDrag();
+    }, { passive: true });
 
     shipList.appendChild(piece);
   });

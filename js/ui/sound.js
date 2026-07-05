@@ -42,6 +42,17 @@ function withContext(callback) {
   if (!context) return;
 
   try {
+    if (context.state === 'suspended') {
+      context.resume()
+        .then(() => {
+          try {
+            callback(context);
+          } catch {}
+        })
+        .catch(() => {});
+      return;
+    }
+
     callback(context);
   } catch {}
 }
@@ -230,6 +241,90 @@ function playSinkPlayerSound() {
   });
 }
 
+function playVictorySound() {
+  withContext((context) => {
+    scheduleTone(context, {
+      type: 'triangle',
+      frequency: 440,
+      endFrequency: 587,
+      gain: 0.08,
+      duration: 0.11,
+      attack: 0.004,
+      release: 0.04,
+    });
+    scheduleTone(context, {
+      type: 'triangle',
+      frequency: 587,
+      endFrequency: 740,
+      gain: 0.09,
+      duration: 0.11,
+      attack: 0.004,
+      release: 0.04,
+      delay: 0.12,
+    });
+    scheduleTone(context, {
+      type: 'sine',
+      frequency: 740,
+      endFrequency: 988,
+      gain: 0.1,
+      duration: 0.16,
+      attack: 0.004,
+      release: 0.06,
+      delay: 0.24,
+    });
+    scheduleTone(context, {
+      type: 'triangle',
+      frequency: 988,
+      endFrequency: 1175,
+      gain: 0.08,
+      duration: 0.18,
+      attack: 0.004,
+      release: 0.06,
+      delay: 0.38,
+    });
+  });
+}
+
+function playDefeatSound() {
+  withContext((context) => {
+    scheduleTone(context, {
+      type: 'sine',
+      frequency: 196,
+      endFrequency: 164,
+      gain: 0.045,
+      duration: 0.18,
+      attack: 0.01,
+      release: 0.08,
+    });
+    scheduleTone(context, {
+      type: 'triangle',
+      frequency: 164,
+      endFrequency: 130,
+      gain: 0.038,
+      duration: 0.18,
+      attack: 0.01,
+      release: 0.08,
+      delay: 0.12,
+    });
+    scheduleTone(context, {
+      type: 'sine',
+      frequency: 130,
+      endFrequency: 98,
+      gain: 0.03,
+      duration: 0.22,
+      attack: 0.01,
+      release: 0.1,
+      delay: 0.26,
+    });
+    playNoise(context, {
+      gain: 0.012,
+      duration: 0.12,
+      lowpass: 700,
+      delay: 0.04,
+    });
+  });
+}
+
 function playMissSound() {
   withContext((context) => {
     playNoise(context, {
@@ -270,9 +365,39 @@ export function playSinkPlayer() {
   playSinkPlayerSound();
 }
 
+export function playVictory() {
+  if (muted) return;
+  playVictorySound();
+}
+
+export function playDefeat() {
+  if (muted) return;
+  playDefeatSound();
+}
+
 export function playMiss() {
   if (muted) return;
   playMissSound();
+}
+
+export function unlockAudio() {
+  const context = getAudioContext();
+  if (!context) return false;
+
+  try {
+    if (context.state === 'suspended') {
+      void context.resume();
+    }
+
+    const buffer = context.createBuffer(1, 1, 22050);
+    const source = context.createBufferSource();
+    source.buffer = buffer;
+    source.connect(context.destination);
+    source.start(0);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 export function isMuted() {
