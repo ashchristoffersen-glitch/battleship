@@ -48,3 +48,5 @@ node --test tests/game.test.js
 ```
 
 Requires Node.js 18+ (uses built-in `node:test` runner).
+
+<!-- pages redeploy 2026-07-05T22:50:05Z -->
