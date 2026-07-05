@@ -783,10 +783,12 @@ body.screen-shake {
 }
 
 .difficulty-screen__buttons {
-  display: flex;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
   gap: 1.5rem;
-  flex-wrap: wrap;
-  justify-content: center;
+  width: max-content;
+  max-width: 100%;
 }
 
 .btn--difficulty {
@@ -907,6 +909,14 @@ body.screen-shake {
 
   .difficulty-screen__howto {
     margin-bottom: 1.25rem;
+  }
+
+  /* Stack the two equally-sized buttons in one column so both fit on a phone. */
+  .difficulty-screen__buttons {
+    grid-auto-flow: row;
+    grid-auto-columns: auto;
+    width: 100%;
+    max-width: 320px;
   }
 
   /* Drop the third sentence on small screens rather than shrinking text. */
