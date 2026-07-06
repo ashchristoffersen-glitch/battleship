@@ -2,7 +2,7 @@
 
 # Battleship
 
-A browser-based Battleship game where a human plays against an AI opponent. Built with plain HTML, CSS, and JavaScript — no frameworks, no dependencies, no build step. Every line of code was written by Devin, directed, reviewed and tested by Ash. See DEBUGGING.md for how
+A browser-based Battleship game where a human plays against an AI opponent. Built with plain HTML, CSS, and JavaScript - no frameworks, no dependencies, no build step. Every line of code was written by Devin, directed, reviewed and tested by Ash. See DEBUGGING.md for how
 
 ## Play
 
