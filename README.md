@@ -49,4 +49,7 @@ node --test tests/game.test.js
 
 Requires Node.js 18+ (uses built-in `node:test` runner).
 
-<!-- pages redeploy 2026-07-05T22:50:05Z -->
+## Documentation
+
+- [DEBUGGING.md](DEBUGGING.md) — bugs found and how they were fixed, grouped by discovery method
+- [devin-bug-log.md](devin-bug-log.md) — full factual log of issues and fixes
