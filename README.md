@@ -53,3 +53,7 @@ Requires Node.js 18+ (uses built-in `node:test` runner).
 
 - [DEBUGGING.md](DEBUGGING.md) — bugs found and how they were fixed, grouped by discovery method
 - [devin-bug-log.md](devin-bug-log.md) — full factual log of issues and fixes
+
+## Known issues
+
+Audio on mobile browsers is a documented open issue, see issue #20 and DEBUGGING.md.
